@@ -3,7 +3,6 @@
 // ============================================================
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
-const STORAGE_KEY  = 'sakutto_api_key';
 
 // ── レベル設定 ────────────────────────────────────────────────
 
@@ -13,7 +12,7 @@ const LEVEL_CONFIG = {
   advanced: { passageChars: 350, summaryChars: 120, desc: '350字程度の文章を、120字程度に要約しましょう' },
 };
 
-// ── トピックプール（40種類） ──────────────────────────────────
+// ── トピックプール（101種類） ─────────────────────────────────
 
 const TOPICS = [
   // 日常生活
@@ -62,11 +61,6 @@ const state = {
 
 const el = (id) => document.getElementById(id);
 
-// ── APIキー ───────────────────────────────────────────────────
-
-function getApiKey() { return localStorage.getItem(STORAGE_KEY) || ''; }
-function setApiKey(k) { localStorage.setItem(STORAGE_KEY, k.trim()); }
-
 // ── トピック選択（直近10件は除外） ───────────────────────────
 
 function randomTopic() {
@@ -78,23 +72,18 @@ function randomTopic() {
   return topic;
 }
 
-// ── Gemini API ────────────────────────────────────────────────
+// ── Gemini API（Netlifyプロキシ経由） ─────────────────────────
 
 async function callGemini(prompt) {
-  const key = getApiKey();
-  if (!key) throw Object.assign(new Error('APIキー未設定'), { code: 'no_key' });
-
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: 'application/json' },
-      }),
-    }
-  );
+  const res = await fetch('/.netlify/functions/gemini', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: GEMINI_MODEL,
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { responseMimeType: 'application/json' },
+    }),
+  });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -195,7 +184,6 @@ function updateScoreBar() {
 async function doGenerate() {
   if (state.loading) return;
 
-  // リセット
   el('emptyState').classList.remove('hidden');
   el('passageBox').classList.add('hidden');
   el('summarySection').classList.add('faded');
@@ -213,22 +201,19 @@ async function doGenerate() {
     state.passage = result.passage;
 
     const cfg = LEVEL_CONFIG[state.level];
-    el('passageText').textContent    = result.passage;
+    el('passageText').textContent      = result.passage;
     el('passageCharBadge').textContent = `${result.passage.length} 字`;
-    el('targetChars').textContent    = cfg.summaryChars;
+    el('targetChars').textContent      = cfg.summaryChars;
 
     el('emptyState').classList.add('hidden');
     el('passageBox').classList.remove('hidden');
-
-    // 要約エリアを有効化
     el('summarySection').classList.remove('faded');
     el('summarySection').classList.add('active');
     el('summaryInput').disabled = false;
     el('summaryInput').focus();
 
   } catch (err) {
-    if (err.code === 'no_key') showApiKeyModal();
-    else alert(`エラーが発生しました:\n${err.message}`);
+    alert(`エラーが発生しました:\n${err.message}`);
   } finally {
     setLoading(false);
   }
@@ -265,8 +250,7 @@ async function doFeedback() {
     el('feedbackSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   } catch (err) {
-    if (err.code === 'no_key') showApiKeyModal();
-    else alert(`エラーが発生しました:\n${err.message}`);
+    alert(`エラーが発生しました:\n${err.message}`);
   } finally {
     setLoading(false);
   }
@@ -274,17 +258,11 @@ async function doFeedback() {
 
 // ── モーダル ──────────────────────────────────────────────────
 
-function showApiKeyModal() {
-  el('apiKeyInput').value = getApiKey();
-  el('apiKeyModal').classList.remove('hidden');
-}
-function hideApiKeyModal() { el('apiKeyModal').classList.add('hidden'); }
-function showGuideModal()  { el('guideModal').classList.remove('hidden'); }
-function hideGuideModal()  { el('guideModal').classList.add('hidden'); }
+function showGuideModal() { el('guideModal').classList.remove('hidden'); }
+function hideGuideModal() { el('guideModal').classList.add('hidden'); }
 
 // ── イベントリスナー ──────────────────────────────────────────
 
-// レベルボタン
 document.querySelectorAll('.level-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
     if (state.loading) return;
@@ -295,20 +273,16 @@ document.querySelectorAll('.level-btn').forEach((btn) => {
   });
 });
 
-// 問題生成
 el('generateBtn').addEventListener('click', doGenerate);
 
-// 要約入力
 el('summaryInput').addEventListener('input', () => {
   const len = el('summaryInput').value.trim().length;
   el('summaryCharCount').textContent = len;
   el('feedbackBtn').disabled = len < 5;
 });
 
-// フィードバック
 el('feedbackBtn').addEventListener('click', doFeedback);
 
-// 次の問題
 el('nextBtn').addEventListener('click', () => {
   el('feedbackSection').classList.add('hidden');
   el('summaryInput').disabled = false;
@@ -316,32 +290,10 @@ el('nextBtn').addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// 使い方
 el('guideBtn').addEventListener('click', showGuideModal);
 el('closeGuideBtn').addEventListener('click', hideGuideModal);
 el('guideModal').addEventListener('click', (e) => { if (e.target === el('guideModal')) hideGuideModal(); });
 
-// APIキー設定
-el('settingsBtn').addEventListener('click', showApiKeyModal);
-el('saveApiKeyBtn').addEventListener('click', () => {
-  const key = el('apiKeyInput').value.trim();
-  if (!key) { alert('APIキーを入力してください'); return; }
-  setApiKey(key);
-  hideApiKeyModal();
-});
-el('toggleKeyBtn').addEventListener('click', () => {
-  const input = el('apiKeyInput');
-  input.type = input.type === 'password' ? 'text' : 'password';
-});
-el('apiKeyModal').addEventListener('click', (e) => {
-  if (e.target === el('apiKeyModal') && getApiKey()) hideApiKeyModal();
-});
-
-// Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./summary-sw.js').catch(() => {});
 }
-
-// ── 初期化 ────────────────────────────────────────────────────
-
-if (!getApiKey()) showApiKeyModal();
