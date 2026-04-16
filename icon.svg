@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 背景 -->
+  <rect width="512" height="512" rx="96" fill="#5C2D18"/>
+  <!-- 本の左ページ -->
+  <rect x="112" y="136" width="126" height="240" rx="8" fill="#F5F0E8"/>
+  <!-- 本の右ページ -->
+  <rect x="274" y="136" width="126" height="240" rx="8" fill="#EDE3D6"/>
+  <!-- 背表紙 -->
+  <rect x="238" y="136" width="36" height="240" rx="4" fill="#3A1A0A"/>
+  <!-- 左ページの線（テキスト表現） -->
+  <rect x="132" y="180" width="86" height="8" rx="4" fill="#5C2D18" opacity="0.4"/>
+  <rect x="132" y="204" width="86" height="8" rx="4" fill="#5C2D18" opacity="0.4"/>
+  <rect x="132" y="228" width="70" height="8" rx="4" fill="#5C2D18" opacity="0.4"/>
+  <rect x="132" y="268" width="86" height="8" rx="4" fill="#5C2D18" opacity="0.4"/>
+  <rect x="132" y="292" width="86" height="8" rx="4" fill="#5C2D18" opacity="0.4"/>
+  <rect x="132" y="316" width="56" height="8" rx="4" fill="#5C2D18" opacity="0.4"/>
+  <!-- 右ページの線 -->
+  <rect x="294" y="180" width="86" height="8" rx="4" fill="#5C2D18" opacity="0.3"/>
+  <rect x="294" y="204" width="86" height="8" rx="4" fill="#5C2D18" opacity="0.3"/>
+  <rect x="294" y="228" width="56" height="8" rx="4" fill="#5C2D18" opacity="0.3"/>
+  <rect x="294" y="268" width="86" height="8" rx="4" fill="#5C2D18" opacity="0.3"/>
+  <rect x="294" y="292" width="86" height="8" rx="4" fill="#5C2D18" opacity="0.3"/>
+  <rect x="294" y="316" width="70" height="8" rx="4" fill="#5C2D18" opacity="0.3"/>
+</svg>
