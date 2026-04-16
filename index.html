@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#5C2D18">
+  <title>サクッと要約</title>
+  <link rel="manifest" href="summary-manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="summary.css">
+</head>
+<body>
+
+  <!-- ========== APIキー設定モーダル ========== -->
+  <div id="apiKeyModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-icon">🔑</div>
+      <h2>APIキーの設定</h2>
+      <p>このアプリはGoogle AI StudioのAPIキー（無料）を使います。</p>
+      <p><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">
+        ▶ Google AI StudioでAPIキーを取得
+      </a></p>
+      <div class="form-group">
+        <label for="apiKeyInput">APIキー（AIzaで始まる文字列）</label>
+        <div class="input-row">
+          <input type="password" id="apiKeyInput" placeholder="AIza..." autocomplete="off" spellcheck="false">
+          <button id="toggleKeyBtn" class="icon-btn">👁</button>
+        </div>
+      </div>
+      <button id="saveApiKeyBtn" class="modal-save-btn">保存して始める</button>
+    </div>
+  </div>
+
+  <!-- ========== 使い方モーダル ========== -->
+  <div id="guideModal" class="modal-overlay hidden">
+    <div class="modal">
+      <h2>📖 要約のコツ</h2>
+      <div class="guide-list">
+        <div class="guide-item">
+          <span class="num">1</span>
+          <div>
+            <strong>メインアイデアを見つける</strong>
+            <p>文章全体で一番伝えたいことは何かを考えましょう。</p>
+          </div>
+        </div>
+        <div class="guide-item">
+          <span class="num">2</span>
+          <div>
+            <strong>自分の言葉で書く</strong>
+            <p>元の文章をそのままコピーせず、言い換えて書きましょう。</p>
+          </div>
+        </div>
+        <div class="guide-item">
+          <span class="num">3</span>
+          <div>
+            <strong>目標字数を意識する</strong>
+            <p>余分な情報は省き、簡潔にまとめましょう。</p>
+          </div>
+        </div>
+        <div class="guide-item">
+          <span class="num">4</span>
+          <div>
+            <strong>フィードバックを活かす</strong>
+            <p>模範要約例と比べて、次の練習に活かしましょう。</p>
+          </div>
+        </div>
+      </div>
+      <button id="closeGuideBtn" class="modal-save-btn">閉じる</button>
+    </div>
+  </div>
+
+  <!-- ========== ヘッダー ========== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <div class="app-icon-wrap">📖</div>
+        <div>
+          <h1 class="app-name">サクッと要約</h1>
+          <p class="app-sub">Japanese Summary Practice</p>
+        </div>
+      </div>
+      <nav class="header-nav">
+        <a href="summary-qr.html" class="nav-link">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="4" height="4"/>
+          </svg>
+          QR
+        </a>
+        <button id="guideBtn" class="nav-link">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          使い方
+        </button>
+        <button id="settingsBtn" class="nav-icon-btn" title="APIキー設定">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </nav>
+    </div>
+    <!-- セッションスコアバー -->
+    <div id="scoreBar" class="score-bar hidden">
+      <div class="score-stats">
+        <span id="practiceCount">0回練習</span>
+        <span id="avgScore">平均 — / 5</span>
+      </div>
+      <div id="scoreDots" class="score-dots"></div>
+    </div>
+  </header>
+
+  <!-- ========== メイン ========== -->
+  <main class="app-main">
+
+    <!-- レベル設定 -->
+    <section class="app-section">
+      <p class="section-label">レベル</p>
+      <div class="level-grid">
+        <button class="level-btn active" data-level="basic">
+          <span class="lv-name">初級</span>
+          <span class="lv-info">150字 → 50字</span>
+        </button>
+        <button class="level-btn" data-level="middle">
+          <span class="lv-name">中級</span>
+          <span class="lv-info">250字 → 80字</span>
+        </button>
+        <button class="level-btn" data-level="advanced">
+          <span class="lv-name">上級</span>
+          <span class="lv-info">350字 → 120字</span>
+        </button>
+      </div>
+      <p id="levelDesc" class="level-desc">150字程度の文章を、50字程度に要約しましょう</p>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- 日本語パッセージ -->
+    <section class="app-section">
+      <div class="section-header">
+        <h2 class="section-title">日本語パッセージ</h2>
+        <button id="generateBtn" class="action-btn">↻ 問題を生成</button>
+      </div>
+
+      <!-- 空の状態 -->
+      <div id="emptyState" class="empty-state">
+        <div class="empty-icon">📖</div>
+        <p>「問題を生成」ボタンを押して練習を始めましょう</p>
+      </div>
+
+      <!-- パッセージ本文 -->
+      <div id="passageBox" class="passage-box hidden">
+        <p id="passageText" class="passage-text"></p>
+        <div class="passage-footer">
+          <span id="passageCharBadge" class="char-badge">— 字</span>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- あなたの要約 -->
+    <section id="summarySection" class="app-section faded">
+      <div class="section-header">
+        <h2 class="section-title">あなたの要約</h2>
+        <span class="target-info">目標：<strong id="targetChars">50</strong>字程度</span>
+      </div>
+      <div class="wc-row">入力文字数：<strong id="summaryCharCount">0</strong> 字</div>
+      <textarea
+        id="summaryInput"
+        class="main-textarea"
+        rows="4"
+        placeholder="ここに要約を書いてください..."
+        disabled></textarea>
+      <button id="feedbackBtn" class="summarize-btn" disabled>
+        フィードバックをもらう
+      </button>
+    </section>
+
+    <!-- ローディング -->
+    <div id="loadingArea" class="loading-area hidden">
+      <div class="spinner"></div>
+      <p id="loadingMsg">生成中...</p>
+    </div>
+
+    <!-- フィードバック -->
+    <section id="feedbackSection" class="app-section hidden">
+      <hr class="section-divider">
+
+      <div id="scoreDisplay" class="score-display">
+        <div class="score-label-txt">スコア</div>
+        <div id="starDisplay" class="stars"></div>
+        <div id="scoreValue" class="score-value"></div>
+      </div>
+
+      <div class="fb-section">
+        <div class="fb-label">📊 総評</div>
+        <p id="fbOverall"></p>
+      </div>
+      <div class="fb-section good">
+        <div class="fb-label">✅ 良い点</div>
+        <p id="fbGood"></p>
+      </div>
+      <div class="fb-section improve">
+        <div class="fb-label">💡 改善ヒント</div>
+        <p id="fbImprove"></p>
+      </div>
+      <div class="fb-section model">
+        <div class="fb-label">📝 模範要約例</div>
+        <p id="fbModel" class="model-answer"></p>
+      </div>
+
+      <button id="nextBtn" class="summarize-btn">次の問題へ →</button>
+    </section>
+
+  </main>
+
+  <script src="summary.js"></script>
+</body>
+</html>

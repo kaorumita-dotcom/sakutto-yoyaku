@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>サクッと要約 — QRコード</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: #1e1b4b;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      gap: 24px;
+    }
+    .title {
+      font-size: clamp(28px, 6vw, 48px);
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+    }
+    .subtitle {
+      font-size: clamp(14px, 3vw, 20px);
+      color: #a5b4fc;
+      text-align: center;
+    }
+    .qr-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.4);
+    }
+    #qrcode canvas, #qrcode img {
+      display: block;
+    }
+    .url-text {
+      font-size: clamp(12px, 2vw, 15px);
+      color: #c7d2fe;
+      text-align: center;
+      word-break: break-all;
+      max-width: 400px;
+    }
+    .instructions {
+      text-align: center;
+      max-width: 400px;
+    }
+    .instructions p {
+      font-size: clamp(14px, 2.5vw, 18px);
+      color: #e0e7ff;
+      margin-bottom: 6px;
+    }
+    .instructions small {
+      font-size: clamp(11px, 2vw, 14px);
+      color: #818cf8;
+    }
+    .edit-btn {
+      margin-top: 8px;
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid #6366f1;
+      border-radius: 8px;
+      color: #a5b4fc;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .edit-btn:hover { background: rgba(99,102,241,.2); }
+  </style>
+</head>
+<body>
+
+  <div class="title">サクッと要約</div>
+  <div class="subtitle">実践女子大学 国際学部 英語学習ツール</div>
+
+  <div class="qr-container">
+    <div id="qrcode"></div>
+  </div>
+
+  <p id="urlDisplay" class="url-text"></p>
+
+  <div class="instructions">
+    <p>📱 スマホのカメラで読み取ってください</p>
+    <small>iPhoneはSafari、AndroidはChromeでも直接開けます</small>
+  </div>
+
+  <button class="edit-btn" id="editUrlBtn">URLを変更する</button>
+
+  <!-- QRコード生成ライブラリ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    // URLパラメータ または 現在のオリジン＋index.html
+    const params  = new URLSearchParams(location.search);
+    const appUrl  = params.get('url') || (location.origin + location.pathname.replace('qr.html', 'index.html'));
+
+    document.getElementById('urlDisplay').textContent = appUrl;
+
+    new QRCode(document.getElementById('qrcode'), {
+      text:         appUrl,
+      width:        260,
+      height:       260,
+      colorDark:    '#1e1b4b',
+      colorLight:   '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+
+    document.getElementById('editUrlBtn').addEventListener('click', () => {
+      const newUrl = prompt('アプリのURLを入力してください:', appUrl);
+      if (newUrl && newUrl.trim()) {
+        location.href = location.pathname + '?url=' + encodeURIComponent(newUrl.trim());
+      }
+    });
+  </script>
+</body>
+</html>
