@@ -98,7 +98,7 @@
   <script>
     // URLパラメータ または 現在のオリジン＋index.html
     const params  = new URLSearchParams(location.search);
-    const appUrl  = params.get('url') || (location.origin + location.pathname.replace('qr.html', 'index.html'));
+    const appUrl  = params.get('url') || (location.origin + '/');
 
     document.getElementById('urlDisplay').textContent = appUrl;
 
